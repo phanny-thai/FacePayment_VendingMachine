@@ -8,7 +8,7 @@ The ultimate face recognition vending machine supporting **THREE different face 
 - **Type**: Verification (1:1)
 - **Architecture**: Custom CNN with twin towers
 - **Input**: Grayscale 105x105
-- **File**: `siamese_model.pth`
+- **File**: `siamese_model.pth` available at: https://drive.google.com/file/d/1zHCmeyGEc0APfkdopJaezoacpSq_t0A7/view?usp=sharing 
 - **Best for**: Secure verification, unlimited users
 
 ### 2. **Model A: MobileNetV2 Classifier** (New - from your latest notebook)
