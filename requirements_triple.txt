@@ -1,0 +1,47 @@
+# Face Payment Vending Machine - Triple Model Requirements
+
+# Core web framework
+flask==3.0.0
+
+# PyTorch (for original Siamese model)
+torch==2.1.0
+torchvision==0.16.0
+
+# TensorFlow/Keras (for Model A and Model B)
+tensorflow==2.15.0
+
+# Image processing
+Pillow==10.1.0
+
+# Numerical operations
+numpy==1.26.2
+
+# Optional: For production deployment
+# gunicorn==21.2.0
+# flask-cors==4.0.0
+
+# ==================================
+# Installation Options
+# ==================================
+
+# Option 1: Install everything (recommended)
+#   pip install -r requirements_triple.txt
+
+# Option 2: PyTorch Siamese only
+#   pip install flask torch torchvision Pillow numpy
+
+# Option 3: Keras models only (Model A + B)
+#   pip install flask tensorflow Pillow numpy
+
+# Option 4: Specific model
+#   For Model A: flask tensorflow Pillow numpy
+#   For Model B: flask tensorflow Pillow numpy
+#   For PyTorch: flask torch torchvision Pillow numpy
+
+# ==================================
+# System Requirements
+# ==================================
+# Python: 3.8 - 3.11 (recommended 3.10)
+# RAM: 4GB minimum, 8GB recommended
+# Storage: 2GB for models + dependencies
+# GPU: Optional but recommended for faster inference

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Payment Vending Machine (Triple Model)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .model-badge {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            padding: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .badge {
+            background: #ffd700;
+            color: #333;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .camera-section {
+            text-align: center;
+        }
+
+        #video, #canvas {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            border: 3px solid #667eea;
+            background: #000;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        button.secondary {
+            background: #28a745;
+        }
+
+        button.secondary:hover {
+            background: #218838;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            transition: border 0.3s;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .item.selected {
+            border: 3px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+
+        .item.out-of-stock {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .item h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .item .price {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .item .stock {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .user-info .balance {
+            font-size: 24px;
+            color: #667eea;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .feature-notice {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .feature-notice strong {
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .inventory-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Face Payment Vending Machine</h1>
+        <div class="model-badge">
+            <span class="badge" id="modelBadge">Loading...</span>
+            <span id="modelFeatures"></span>
+        </div>
+
+        <div class="main-content">
+            <div class="card camera-section">
+                <h2>📸 Face Capture</h2>
+                <video id="video" autoplay></video>
+                <canvas id="canvas"></canvas>
+                
+                <div class="controls">
+                    <button id="startCamera">Start Camera</button>
+                    <button id="captureBtn" disabled>Capture Face</button>
+                </div>
+                
+                <div id="cameraStatus" class="status" style="display:none;"></div>
+            </div>
+
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('register')">Register</button>
+                    <button class="tab" onclick="switchTab('purchase')">Purchase</button>
+                    <button class="tab" id="identifyTab" onclick="switchTab('identify')" style="display:none;">Auto-ID</button>
+                </div>
+
+                <div id="registerTab" class="tab-content active">
+                    <h2>👤 Register New User</h2>
+                    <input type="text" id="registerUserId" placeholder="Enter User ID (e.g., john_doe)">
+                    <input type="number" id="initialBalance" placeholder="Initial Balance ($)" value="10" step="0.01">
+                    <button onclick="registerUser()">Register Face</button>
+                    <div id="registerStatus" class="status" style="display:none;"></div>
+                </div>
+
+                <div id="purchaseTab" class="tab-content">
+                    <h2>💳 Face Payment</h2>
+                    <div id="manualVerifySection">
+                        <input type="text" id="purchaseUserId" placeholder="Enter User ID (optional for EfficientNet)">
+                        <button onclick="verifyUser()">Verify Face</button>
+                    </div>
+                    
+                    <div id="userInfo" class="user-info" style="display:none;">
+                        <div>User: <strong id="currentUser"></strong></div>
+                        <div class="balance">Balance: $<span id="userBalance">0.00</span></div>
+                    </div>
+                    
+                    <div id="purchaseStatus" class="status" style="display:none;"></div>
+                </div>
+
+                <div id="identifyTab" class="tab-content">
+                    <h2>🔍 Auto-Identify & Purchase</h2>
+                    <div class="feature-notice">
+                        <strong>EfficientNet Feature:</strong> Just capture your face and the system will automatically identify you!
+                    </div>
+                    <button class="secondary" onclick="autoIdentify()">Identify Me</button>
+                    
+                    <div id="identifyInfo" class="user-info" style="display:none;">
+                        <div>Identified User: <strong id="identifiedUser"></strong></div>
+                        <div>Confidence: <strong id="identifyConfidence"></strong></div>
+                        <div class="balance">Balance: $<span id="identifiedBalance">0.00</span></div>
+                    </div>
+                    
+                    <div id="identifyStatus" class="status" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🛒 Available Items</h2>
+            <div id="inventory" class="inventory-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let currentStream = null;
+        let capturedImage = null;
+        let selectedItem = null;
+        let currentUser = null;
+        let modelType = '';
+
+        // Inventory - will be loaded from server
+        let inventory = {};
+
+        // Initialize
+        loadModelInfo();
+        loadInventory();
+
+        // Load model information
+        async function loadModelInfo() {
+            try {
+                const response = await fetch('/model_info');
+                const info = await response.json();
+                modelType = info.active_model;
+                
+                const badge = document.getElementById('modelBadge');
+                const features = document.getElementById('modelFeatures');
+                
+                if (modelType === 'modelA') {
+                    badge.textContent = '⚡ Model A: MobileNetV2 Classifier';
+                    badge.style.background = '#28a745';
+                    features.textContent = '• Auto-ID • Fast Recognition • Transfer Learning';
+                    document.getElementById('identifyTab').style.display = 'block';
+                } else if (modelType === 'modelB') {
+                    badge.textContent = '🔐 Model B: MobileNetV2 Siamese';
+                    badge.style.background = '#17a2b8';
+                    features.textContent = '• Embeddings • L2 Normalization • Secure Verification';
+                } else if (modelType === 'siamese_pytorch') {
+                    badge.textContent = '🔒 PyTorch Siamese (Original)';
+                    badge.style.background = '#007bff';
+                    features.textContent = '• CNN-based • Distance Metric • User ID Required';
+                } else {
+                    badge.textContent = '❌ No Model Loaded';
+                    badge.style.background = '#dc3545';
+                }
+                
+                // Show model availability
+                const modelsAvail = info.models_available;
+                let availText = ' | Available: ';
+                if (modelsAvail.siamese_pytorch) availText += 'PyTorch ';
+                if (modelsAvail.modelA_classifier) availText += 'ModelA ';
+                if (modelsAvail.modelB_siamese) availText += 'ModelB ';
+                features.textContent += availText;
+            } catch (err) {
+                console.error('Error loading model info:', err);
+            }
+        }
+
+        // Load inventory from server
+        async function loadInventory() {
+            try {
+                const response = await fetch('/inventory');
+                inventory = await response.json();
+                displayInventory();
+            } catch (err) {
+                console.error('Error loading inventory:', err);
+            }
+        }
+
+        // Start camera
+        document.getElementById('startCamera').addEventListener('click', async () => {
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 } 
+                });
+                video.srcObject = currentStream;
+                document.getElementById('captureBtn').disabled = false;
+                showStatus('cameraStatus', 'Camera started successfully!', 'success');
+            } catch (err) {
+                showStatus('cameraStatus', 'Error accessing camera: ' + err.message, 'error');
+            }
+        });
+
+        // Capture face
+        document.getElementById('captureBtn').addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            capturedImage = canvas.toDataURL('image/jpeg');
+            showStatus('cameraStatus', 'Face captured! Ready for verification.', 'success');
+        });
+
+        // Switch tabs
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').classList.add('active');
+            
+            // Reset states
+            selectedItem = null;
+            displayInventory();
+        }
+
+        // Register user
+        async function registerUser() {
+            const userId = document.getElementById('registerUserId').value.trim();
+            const balance = parseFloat(document.getElementById('initialBalance').value);
+
+            if (!userId) {
+                showStatus('registerStatus', 'Please enter a User ID', 'error');
+                return;
+            }
+
+            if (!capturedImage) {
+                showStatus('registerStatus', 'Please capture your face first!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        image: capturedImage,
+                        balance: balance
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('registerStatus', data.message + ` Balance: $${data.balance}`, 'success');
+                    document.getElementById('registerUserId').value = '';
+                    capturedImage = null;
+                } else {
+                    showStatus('registerStatus', data.message, 'error');
+                }
+            } catch (err) {
+                showStatus('registerStatus', 'Error: ' + err.message, 'error');
+            }
+        }
+
+        // Verify user (manual mode)
+        async function verifyUser() {
+            const userId = document.getElementById('purchaseUserId').value.trim();
+
+            if (modelType === 'siamese_pytorch' && !userId) {
+                showStatus('purchaseStatus', 'PyTorch Siamese model requires User ID', 'error');
+                return;
+            }
+
+            if (modelType === 'modelB' && !userId) {
+                showStatus('purchaseStatus', 'Model B requires User ID', 'error');
+                return;
+            }
+
+            if (!capturedImage) {
+                showStatus('purchaseStatus', 'Please capture your face first!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId || null,
+                        image: capturedImage
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentUser = data.user_id;
+                    document.getElementById('currentUser').textContent = data.user_id;
+                    document.getElementById('userBalance').textContent = data.balance.toFixed(2);
+                    document.getElementById('userInfo').style.display = 'block';
+                    showStatus('purchaseStatus', data.message + ' Select an item to purchase.', 'success');
+                } else {
+                    showStatus('purchaseStatus', data.message, 'error');
+                    document.getElementById('userInfo').style.display = 'none';
+                }
+            } catch (err) {
+                showStatus('purchaseStatus', 'Error: ' + err.message, 'error');
+            }
+        }
+
+        // Auto-identify user (EfficientNet only)
+        async function autoIdentify() {
+            if (!capturedImage) {
+                showStatus('identifyStatus', 'Please capture your face first!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/identify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: capturedImage })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentUser = data.user_id;
+                    document.getElementById('identifiedUser').textContent = data.user_id;
+                    document.getElementById('identifyConfidence').textContent = data.confidence.toFixed(1) + '%';
+                    document.getElementById('identifiedBalance').textContent = data.balance.toFixed(2);
+                    document.getElementById('identifyInfo').style.display = 'block';
+                    showStatus('identifyStatus', data.message + ' Select an item to purchase.', 'success');
+                } else {
+                    showStatus('identifyStatus', data.message, 'error');
+                    document.getElementById('identifyInfo').style.display = 'none';
+                }
+            } catch (err) {
+                showStatus('identifyStatus', 'Error: ' + err.message, 'error');
+            }
+        }
+
+        // Purchase item
+        async function purchaseItem(itemId) {
+            if (!currentUser) {
+                showStatus('purchaseStatus', 'Please verify your face first!', 'error');
+                showStatus('identifyStatus', 'Please identify yourself first!', 'error');
+                return;
+            }
+
+            if (!capturedImage) {
+                showStatus('purchaseStatus', 'Please capture your face again for payment!', 'error');
+                showStatus('identifyStatus', 'Please capture your face again for payment!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/purchase', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUser,
+                        image: capturedImage,
+                        item_id: itemId
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    const msg = `${data.message} New balance: $${data.remaining_balance.toFixed(2)}`;
+                    showStatus('purchaseStatus', msg, 'success');
+                    showStatus('identifyStatus', msg, 'success');
+                    
+                    // Update balance displays
+                    document.getElementById('userBalance').textContent = data.remaining_balance.toFixed(2);
+                    document.getElementById('identifiedBalance').textContent = data.remaining_balance.toFixed(2);
+                    
+                    // Update inventory
+                    inventory[itemId].stock--;
+                    displayInventory();
+                    
+                    // Clear captured image to require re-capture
+                    capturedImage = null;
+                } else {
+                    showStatus('purchaseStatus', data.message, 'error');
+                    showStatus('identifyStatus', data.message, 'error');
+                }
+            } catch (err) {
+                const errMsg = 'Error: ' + err.message;
+                showStatus('purchaseStatus', errMsg, 'error');
+                showStatus('identifyStatus', errMsg, 'error');
+            }
+        }
+
+        // Display inventory
+        function displayInventory() {
+            const inventoryDiv = document.getElementById('inventory');
+            inventoryDiv.innerHTML = '';
+
+            for (const [id, item] of Object.entries(inventory)) {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'item';
+                
+                if (item.stock === 0) {
+                    itemDiv.classList.add('out-of-stock');
+                }
+                
+                if (selectedItem === id) {
+                    itemDiv.classList.add('selected');
+                }
+
+                itemDiv.innerHTML = `
+                    <h3>${item.name}</h3>
+                    <div class="price">$${item.price.toFixed(2)}</div>
+                    <div class="stock">Stock: ${item.stock}</div>
+                `;
+
+                if (item.stock > 0) {
+                    itemDiv.onclick = () => {
+                        selectedItem = id;
+                        purchaseItem(id);
+                    };
+                }
+
+                inventoryDiv.appendChild(itemDiv);
+            }
+        }
+
+        // Show status message
+        function showStatus(elementId, message, type) {
+            const statusDiv = document.getElementById(elementId);
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
